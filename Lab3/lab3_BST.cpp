@@ -7,7 +7,7 @@ Design Documentation
 
 Objective: The objective of this code is to implement a binary search tree.
 It will be used to store a set of numbers.
-The binary search tree demoonstrates basic operations like insert, delete, and search.
+The binary search tree demonstrates basic operations like insert, delete, and search.
 */
 
 #include <iostream>
