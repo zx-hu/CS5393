@@ -1,3 +1,15 @@
+/*
+Name: Gloria Hu
+Class: 5393-002 Data Structures in C++ 
+Collaborators: none
+
+Design Documentation
+
+Objective: The objective of this code is to implement a priority queue using a heap structure.
+It will be used to store a set of numbers, prioritized by greatest value.
+The queue demonstrates basic operations like push, pop, print, top, and heapify.
+*/
+
 #include <iostream>
 #include <vector>
 #include <stdexcept>
@@ -47,7 +59,7 @@ class PriorityQ{
         void push(int element){
             heap.push_back(element);
             heapifyUp(heap.size()-1);
-            cout << element << " inserted" << endl;
+            cout << element << " inserted. " << endl;
         }
 
         int pop(){
@@ -61,17 +73,20 @@ class PriorityQ{
         }
 
         void print(){
-            for(int element : heap){
-                cout << element << " ";
+            PriorityQ tempPQ = *this; // Copy of the current heap
+            
+            while (!tempPQ.empty()) {
+                cout << tempPQ.pop() << " ";
             }
             cout << endl;
         }
+
 };
 
 int main(){
     PriorityQ pq;
     string input;
-    cout << "Input the dataset: ";
+    cout << "Input the dataset: "; 
     getline(cin, input);
 
     cout << "Original Dataset: " << input << endl;
@@ -102,8 +117,8 @@ int main(){
    
     try {
         pq.pop(); // This should trigger the exception handler
-    } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+    } catch (const exception& e) {
+        cerr << e.what() << endl;
     }
     return 0;
 }
