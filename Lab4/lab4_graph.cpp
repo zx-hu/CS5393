@@ -1,3 +1,15 @@
+/*
+Name: Gloria Hu
+Class: 5393-002 Data Structures in C++ 
+Collaborators: none
+
+Design Documentation
+
+Objective: The objective of this code is to implement a graph as an adjacency list and matrix.
+It allows the user to create their own nodes and edges.
+The graph can be traversed in preorder, inorder, and postorder.
+*/
+
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -18,6 +30,10 @@ struct Node{
     void addNeighbor(Node* neighbor){
         neighbors[neighborCount++] = neighbor;
     }
+
+    ~Node(){
+        delete[] neighbors;
+    }
 };
 
 class Graph{
@@ -25,18 +41,25 @@ class Graph{
         Node** nodes;
         int nodeCount = 0;
         int capacity;
+        int** matrix;
 
     public: 
         Graph(int size){
             capacity = size;
             nodes = new Node*[capacity];
+            matrix = new int*[capacity];
+            for(int i=0; i<capacity; i++){
+                matrix[i] = new int[capacity];
+            }
         }
 
         ~Graph(){   //may have to add more later
             for(int i =0; i<nodeCount; i++){
                 delete[] nodes[i];
+                delete[] matrix[i];
             }
             delete[] nodes;
+            delete[] matrix;
         }
 
         Node* getNode(int val){
@@ -56,6 +79,9 @@ class Graph{
             Node* srcNode = getNode(src);
             Node* destNode = getNode(dest);
             srcNode->addNeighbor(destNode);
+            destNode->addNeighbor(srcNode); //undirected
+            matrix[src][dest] = 1;
+            matrix[dest][src] = 1;          //undirected
         }
 
         //node -> left -> right
@@ -76,12 +102,14 @@ class Graph{
             if(!node || visited[node->value]){
                 return;
             }
+            visited[node->value] = true;
+
             if(node->neighborCount > 0){    //left node
                 inorderDFS(node->neighbors[0], visited);
             }
-            visited[node->value] = true;
             cout << node->value << " ";
-            for(int i = 1; i > node->neighborCount; i++){
+
+            for(int i = 1; i < node->neighborCount; i++){
                 inorderDFS(node->neighbors[i], visited); //right node
             }
         }
@@ -91,10 +119,12 @@ class Graph{
             if(!node || visited[node->value]){
                 return;
             }
+
+            visited[node->value] = true;
+
             for(int i = 0; i < node->neighborCount; i++){
                 postorderDFS(node->neighbors[i], visited);
             }
-            visited[node->value] = true;
             cout << node->value << " ";
         }
 
@@ -120,7 +150,22 @@ class Graph{
             for(int i = 0; i<nodeCount; i++){
                 cout << nodes[i]->value << ": ";
                 for(int j=0; j<nodes[i]->neighborCount; j++){
-                    cout << nodes[i]->neighbors[j] << " ";
+                    cout << nodes[i]->neighbors[j]->value << " ";
+                }
+                cout << endl;
+            }
+        }
+
+        void printMatrix(){
+            cout << "  ";
+            for(int i = 0; i<nodeCount; i++){
+                cout << i << " ";
+            }
+            cout << endl;
+            for(int i =0; i<nodeCount; i++){
+                cout << i <<  " ";
+                for(int j = 0; j<nodeCount; j++){
+                    cout << matrix[i][j] << " ";
                 }
                 cout << endl;
             }
@@ -130,31 +175,47 @@ class Graph{
 
 int main(){
 
-    Graph g(Graph_Size);
-    string input;
-    cout << "Input the dataset: ";
-    getline(cin, input);
+    int size;
+    cout << "Input the size of the graph: ";
+    cin >> size;
+    Graph g(size);
 
-    //remove brackets
-    input = input.substr(1, input.size() - 2);
+    for (int i = 0; i < size; i++){
+        g.getNode(i);   //fill nodes with 0 through size-1
+    }
 
-    //split by commas
-    vector<int> numbers;
-    stringstream ss(input);
-    string item;
-    char delimiter = ',';
-    while(getline(ss, item, delimiter)){
-        int num = stoi(item);
-        g.getNode(num);
+    int src, dest;
+    cout << "enter 2 numbers at a time to add as an edge. enter an invalid value to quit: ";
+    while(true){
+        cin >> src;
+        cin >> dest;
+        if(src >= 0 && src < size && dest >= 0 && dest < size){
+            g.addEdge(src, dest);
+            continue;
+        }
+        break;
     }
 
     g.printGraph();
-    g.DFS(0);
+    g.printMatrix();
 
-
+    string order;
+    while(true){
+        cout << "what traversal (preorder, inorder, postorder)? enter a non value to quit: ";
+        cin >> order;
+        if(order != "preorder" && order != "inorder" && order != "postorder"){
+            break;
+        }
+        cout << "what node to start from: ";
+        cin >> src;
+        g.DFS(src, order);
+        cout << endl;
+    }
     return 0;
 }
 
 /*
 References:
+GeeksforGeeks: https://www.geeksforgeeks.org/tree-traversals-inorder-preorder-and-postorder/
+Microsoft Copilot: https://copilot.microsoft.com 
 */
