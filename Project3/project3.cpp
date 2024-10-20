@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
-//#include <tuple>
+#include <iomanip>
 
 using namespace std;
 
@@ -61,6 +61,8 @@ int main(){
         return -1;
     }
 
+    vector<pair<DSString, int> > predictions;
+
     getline(testingData, line);    //toss the header line
     for(int i =0; i<25; i++){   //just getting 25 lines for now
         string id, date, query, user, tweet;
@@ -78,15 +80,50 @@ int main(){
 
         int prediction = classifier.predict(DStweet);
         outFile << prediction << ", " << DSid;
+        predictions.push_back(make_pair(DSid, prediction));
 
-        cout << id << ": " << prediction << endl;
+        //cout << id << ": " << prediction << endl;
     }  
     testingData.close();
 
     //accuracy
+    ifstream answerFile;
+    answerFile.open("test_dataset_sentiment_10k.csv");
+    if (!answerFile.is_open()) {
+        cerr << "Error opening answer file" << endl;
+        return -1;
+    }
     ofstream statsFile;
     statsFile.open("accuracy.txt");
+    vector<pair<pair<DSString, int>, int> > answers;    //id, prediction, sentiment
 
+    getline(answerFile, line);  //toss the header line
+
+    double correct_predictions = 0;
+    int total_predictions = 0;
+    for(const auto &p : predictions){
+        string id, sent;
+        getline(answerFile, line); 
+        stringstream ss (line);
+        getline(ss, sent, ',');
+        getline(ss, id);
+        DSString DSid(id.c_str());
+        
+        int sentiment = stoi(sent);
+        total_predictions++;
+        if (p.first == DSid && p.second == sentiment) {
+            correct_predictions++;
+        } else if (p.first == DSid && p.second != sentiment) {
+            answers.push_back(make_pair(p, sentiment));
+        }  
+    }
+    //del later
+    cout << fixed << setprecision(3) << "Rating: " << correct_predictions/total_predictions;
+    
+    statsFile << fixed << setprecision(3) << correct_predictions/total_predictions << endl;
+    for(const auto &a : answers){   //prediction, sentiment, id
+        statsFile << a.first.second << ", " << a.second << ", " << a.first.first << endl;
+    }
 
     outFile.close();
     statsFile.close();
