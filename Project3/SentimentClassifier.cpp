@@ -3,51 +3,68 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <vector>
 
 
 SentimentClassifier::SentimentClassifier(){
-    positiveWords = std::unordered_map<DSString, int>();
-    negativeWords = std::unordered_map<DSString, int>();
+    positiveWords = std::unordered_map<DSString, size_t>();
+    negativeWords = std::unordered_map<DSString, size_t>();
 }
 
 void SentimentClassifier::train(DSString& text, DSString& sentiment){
     char delimiter = ' ';
-    DSString* words = text.split(delimiter);
-    if(sentiment == "4"){   //if positive
-        for(size_t i = 0; words[i].length() > 0; i++){
-            positiveWords[words[i]]++;
-        }
-    }else if(sentiment == "0"){ //if negative
-        for(size_t i = 0; words[i].length() > 0; i++){
-            negativeWords[words[i]]++;
+    std::vector<DSString> words = text.split(delimiter);            //fix this
+    for(auto w : words){
+        try{
+            //skip if word is too short
+            if(w.length() < 3){
+                continue;
+            }
+            
+            //stem for ed and ing
+            if(w.toLower().substring(w.length()-2, 2) == "ed"){
+                w = w.substring(0, w.length() - 2);
+                
+            }else if(w.toLower().substring(w.length()-3, 3) == "ing"){
+                w = w.substring(0, w.length() - 3);
+            }
+
+            if(sentiment == "4"){
+                positiveWords[w.toLower()]++;
+            }else if(sentiment == "0"){
+                negativeWords[w.toLower()]++;
+            }
+        }catch(const std::exception& e){
+            //std::cerr << "Error processing word: " << w << " - " << e.what() << "\n";
+            continue;
         }
     }
-    delete[] words;
 }
 
 int SentimentClassifier::predict(DSString& text){
-    int positive = 0;
-    int negative = 0;
+    size_t positive = 0;
+    size_t negative = 0;
     char delimiter = ' ';
-    DSString* words = text.split(delimiter);
-    for(size_t i = 0; words[i].length() > 0; i++){
-        auto posIt = positiveWords.find(words[i]);
-        if(posIt != positiveWords.end()){
-            positive += posIt->second;
-        }
-       auto negIt = negativeWords.find(words[i]);
-        if(negIt != negativeWords.end()){
-            negative += negIt->second;
+    std::vector<DSString> words = text.split(delimiter);
+
+    for(auto w : words){
+        try{
+            auto posIt = positiveWords.find(w.toLower());
+            if(posIt != positiveWords.end()){
+                positive += posIt->second;
+            }
+            auto negIt = negativeWords.find(w.toLower());
+            if(negIt != negativeWords.end()){
+                negative += negIt->second;
+            }
+        }catch(const std::exception& e){
+            std::cerr << "Error processing word: " << w << " - " << e.what() << "\n";
+            continue;
         }
     }
-    delete[] words;
 
     if(positive>negative){  //positive
         return 4;
     }           
     return 0;           
-}
-
-void SentimentClassifier::evaluatePredictions(){    //need to add args
-
 }
