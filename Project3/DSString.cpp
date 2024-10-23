@@ -1,6 +1,8 @@
 #include "DSString.h"
 
 #include <stdexcept>
+#include <iostream>
+#include <vector>
 
 /* 
  * Implement the functions defined in DSString.h. You may add more functions as needed
@@ -19,38 +21,50 @@ DSString::DSString(){
 
 //constructor to convert a string
 DSString::DSString(const char* str){
-    size_t i =0;
-    len = 0;
-    while(str[i] != '\0'){
-        len++;
-        i++;
+    if(str){
+        len = 0;
+        while(str[len] != '\0'){
+            len++;
+        }
+        data = new char[len+1];
+        for(size_t i = 0; i<len; i++){
+            data[i] = str[i];
+        }
+        data[len] = '\0';
+    }else{
+        data = nullptr;
+        len = 0;
     }
-    data = new char[len+1];
-    for(size_t j = 0; j<len; j++){
-        data[j] = str[j];
-    }
-    data[len] = '\0';
+    
 }
 
 //copy constructor
 DSString::DSString(const DSString& other){
-    data = new char[other.len +1];
     len = other.len;
-    for(size_t i = 0; i<len; i++){
-        data[i] = other.data[i];
+    if (len > 0){
+        data = new char[other.len +1];
+        for(size_t i = 0; i<len; i++){
+            data[i] = other.data[i];
+        }
+        data[len] = '\0';  
+    }else{
+        data = new char[1];
+        data[0] = '\0';
     }
-    data[len] = '\0';   //add terminator to end?
+    
 }
 
 //copy assignment operator
 DSString& DSString::operator=(const DSString& other){
-    delete[] data;
-    len = other.len;
-    data = new char[len+1];
-    for(size_t i=0; i<len; i++){
-        data[i] = other.data[i];
+    if(this != &other){
+        delete[] data;
+        len = other.len;
+        data = new char[len+1];
+        for(size_t i=0; i<len; i++){
+            data[i] = other.data[i];
+        }
+        data[len] = '\0';
     }
-    data[len] = '\0';
     return *this;
 }
 
@@ -115,6 +129,7 @@ DSString DSString::substring(size_t start, size_t numChars) const{
     if(start + numChars > len){throw std::out_of_range("Index out of bounds");}
     DSString ret;
     ret.len = numChars;
+    delete[] ret.data;
     ret.data = new char[ret.len+1];
     for(size_t i=0; i<numChars; i++){
         ret.data[i] = data[start+i];
@@ -138,8 +153,33 @@ const char* DSString::c_str() const{
     return data;
 }
 
+std::string DSString::string() const{
+    return std::string(data);   //idk how this'd works
+}
+
 std::ostream& operator<<(std::ostream& os, const DSString& str){
     os << str.data;
     return os;
+}
+
+std::vector<DSString> DSString::split(char delimiter){
+    size_t count = 0;
+    for(size_t i = 0; i<len; i++){
+        if(data[i] == delimiter){
+            count++;
+        }
+    }
+
+    std::vector<DSString> ret;
+    size_t tokenIndex = 0;
+    size_t index = 0;
+    for(size_t i = 0; i<len; i++){
+        if(data[i] == delimiter){
+            ret.push_back(substring(index, i-index));
+            index = i +1;
+        }
+    }
+    ret.push_back(substring(index, len - index)); // Last segment
+    return ret;
 }
 
