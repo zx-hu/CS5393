@@ -9,10 +9,11 @@
 #define DSSTRING_H
 
 #include <iostream>
+#include <functional>
+#include <string>
+#include <vector>
 
-class DSString
-{
-
+class DSString{
 private:
     char *data; // a pointer to a character array containing the string with a `\0` terminator
     size_t len; // the length of the string (without the terminator)
@@ -77,6 +78,7 @@ public:
     const char *c_str() const;
 
     // a conversion to std::string would also be nice to have: string string() const;
+    std::string string() const;
 
     /**
      * Overloaded stream insertion operator to print the contents of this
@@ -90,6 +92,17 @@ public:
     // you may want to add a find(...) function that will search for a
     // substring within a string or a function that breaks a string into words.
     // You will need a split or tokenize function.
+
+   std::vector<DSString> split(char delimiter);
 };
+
+namespace std {
+    template <>
+    struct hash<DSString> {
+        size_t operator()(const DSString& str) const {
+            return std::hash<std::string>()(str.c_str());
+        }
+    };
+}
 
 #endif
