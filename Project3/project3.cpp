@@ -10,11 +10,10 @@
 using namespace std;
 
 int main(){
-    
-    //string trainingFile, testingFile, answerFile, outputFile, accuracyFile;
-    
+
     SentimentClassifier classifier;
 
+    //train the classifer
     string line;
     ifstream trainingData("train_dataset_20k.csv");
 
@@ -23,37 +22,36 @@ int main(){
         return -1;
     }
     getline(trainingData, line);    //toss the header line
-    //vector<tuple<DSString,DSString,DSString> > tweetList;
 
-    for(int i =0; i<25; i++){   //just getting 25 lines for now
-        string sentiment, id, date, query, user, tweet;
-        //char sentiment[1], id[10], date[28], query[8], user[100], tweet[100];
-        getline(trainingData, line);
-        stringstream ss (line);
-        
-        getline(ss, sentiment, ',');
-        DSString DSsentiment(sentiment.c_str());    //am i allowed to do this???
-        getline(ss, id, ',');
-        DSString DSid(id.c_str());
-        getline(ss, date, ',');
-        getline(ss, query, ',');
-        getline(ss, user, ',');
-        getline(ss, tweet);
-        DSString DStweet(tweet.c_str());
+    string sentiment, id, date, query, user, tweet;
+    //for(int i =0; i<500; i++){   //just getting sample of lines for now
+    while(getline(trainingData,line)){
+        try{
+            //char sentiment[1], id[10], date[28], query[8], user[100], tweet[100];
+            //getline(trainingData, line);
+            stringstream ss (line);
+            
+            getline(ss, sentiment, ',');
+            DSString DSsentiment(sentiment.c_str());    //am i allowed to do this???
+            getline(ss, id, ',');
+            DSString DSid(id.c_str());
+            getline(ss, date, ',');
+            getline(ss, query, ',');
+            getline(ss, user, ',');
+            getline(ss, tweet);
+            DSString DStweet(tweet.c_str());
 
-        classifier.train(DStweet, DSsentiment);
-
-        //tweetList.push_back(make_tuple(DSsentiment, DSid, DStweet));
+            classifier.train(DStweet, DSsentiment);
+        }catch(const std::exception& e){
+            std::cerr << "Error: " << e.what() << "\n";
+            continue;
+        }
     }  
 
-    //for (const auto& tuple : tweetList) {
-    //    cout << "Sentiment: " << get<0>(tuple) << ", User: " << get<1>(tuple) << ", Tweet: " << get<2>(tuple) << endl;
-    //}
     trainingData.close();
 
-    //test data
-    ofstream outFile;
-    outFile.open("results.csv");
+    //run classifier on test data
+    ofstream outFile("results.csv");
     ifstream testingData("test_dataset_10k.csv");
 
     if (!testingData.is_open()) {
@@ -64,10 +62,10 @@ int main(){
     vector<pair<DSString, int> > predictions;
 
     getline(testingData, line);    //toss the header line
-    for(int i =0; i<25; i++){   //just getting 25 lines for now
-        string id, date, query, user, tweet;
+    while(getline(testingData, line)){
+    //for(int i =0; i<500; i++){   //just getting sample of lines for now
         //char sentiment[1], id[10], date[28], query[8], user[100], tweet[100];
-        getline(testingData, line);
+        //getline(testingData, line);
         stringstream ss (line);
 
         getline(ss, id, ',');
@@ -78,23 +76,22 @@ int main(){
         getline(ss, tweet);
         DSString DStweet(tweet.c_str());
 
+        //make prediction, add it to output file
         int prediction = classifier.predict(DStweet);
-        outFile << prediction << ", " << DSid;
+        outFile << prediction << ", " << DSid << endl;
         predictions.push_back(make_pair(DSid, prediction));
-
-        //cout << id << ": " << prediction << endl;
+        
     }  
+    outFile.close();
     testingData.close();
 
-    //accuracy
-    ifstream answerFile;
-    answerFile.open("test_dataset_sentiment_10k.csv");
+    //compare results to find accuracy
+    ifstream answerFile("test_dataset_sentiment_10k.csv");
     if (!answerFile.is_open()) {
         cerr << "Error opening answer file" << endl;
         return -1;
     }
-    ofstream statsFile;
-    statsFile.open("accuracy.txt");
+    ofstream statsFile("accuracy.txt");
     vector<pair<pair<DSString, int>, int> > answers;    //id, prediction, sentiment
 
     getline(answerFile, line);  //toss the header line
@@ -102,24 +99,24 @@ int main(){
     double correct_predictions = 0;
     int total_predictions = 0;
     for(const auto &p : predictions){
-        string id, sent;
         getline(answerFile, line); 
-        stringstream ss (line);
-        getline(ss, sent, ',');
+        stringstream ss(line);
+        getline(ss, sentiment, ',');
         getline(ss, id);
         DSString DSid(id.c_str());
         
-        int sentiment = stoi(sent);
+        int sent = stoi(sentiment);
         total_predictions++;
-        if (p.first == DSid && p.second == sentiment) {
+        if (p.first == DSid && p.second == sent) {
             correct_predictions++;
-        } else if (p.first == DSid && p.second != sentiment) {
-            answers.push_back(make_pair(p, sentiment));
+        } else if (p.first == DSid && p.second != sent) {
+            answers.push_back(make_pair(p, sent));
         }  
     }
     //del later
     cout << fixed << setprecision(3) << "Rating: " << correct_predictions/total_predictions;
     
+    //write accuracy to file
     statsFile << fixed << setprecision(3) << correct_predictions/total_predictions << endl;
     for(const auto &a : answers){   //prediction, sentiment, id
         statsFile << a.first.second << ", " << a.second << ", " << a.first.first << endl;
