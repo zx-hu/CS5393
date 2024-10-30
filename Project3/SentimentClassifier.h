@@ -7,14 +7,15 @@
 
 class SentimentClassifier{
     private:
-        std::unordered_map<DSString, int> positiveWords;
-        std::unordered_map<DSString, int> negativeWords;
+        std::unordered_map<DSString, size_t> positiveWords;
+        std::unordered_map<DSString, size_t> negativeWords;
+
+        DSString processWord(DSString w);
 
     public:
         SentimentClassifier();
         void train(DSString& text, DSString& sentiment);
         int predict(DSString& text);
-        void evaluatePredictions(); //what args?
     
 };
 
