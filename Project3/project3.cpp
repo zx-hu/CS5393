@@ -1,3 +1,15 @@
+/*
+Name: Gloria Hu
+Class: 5393-002 Data Structures in C++ 
+Collaborators: none
+
+Design Documentation
+
+Objective: The objective of this code is to classify tweets to determine their sentiment.
+This code has its own string class and trains its own model to label tweets.
+It also processes training and testing input data, and outputs testing and accuracy data.
+*/
+
 #include "SentimentClassifier.h"
 #include "DSString.h"
 
@@ -10,7 +22,6 @@
 using namespace std;
 
 int main(){
-
     SentimentClassifier classifier;
 
     //train the classifer
@@ -24,28 +35,21 @@ int main(){
     getline(trainingData, line);    //toss the header line
 
     string sentiment, id, date, query, user, tweet;
-    //for(int i =0; i<500; i++){   //just getting sample of lines for now
     while(getline(trainingData,line)){
-        try{
-            //char sentiment[1], id[10], date[28], query[8], user[100], tweet[100];
-            //getline(trainingData, line);
-            stringstream ss (line);
-            
-            getline(ss, sentiment, ',');
-            DSString DSsentiment(sentiment.c_str());    //am i allowed to do this???
-            getline(ss, id, ',');
-            DSString DSid(id.c_str());
-            getline(ss, date, ',');
-            getline(ss, query, ',');
-            getline(ss, user, ',');
-            getline(ss, tweet);
-            DSString DStweet(tweet.c_str());
+        stringstream ss (line);
+        
+        //separate data by ,
+        getline(ss, sentiment, ',');
+        DSString DSsentiment(sentiment.c_str());    //turn into DSString
+        getline(ss, id, ',');
+        DSString DSid(id.c_str());
+        getline(ss, date, ',');
+        getline(ss, query, ',');
+        getline(ss, user, ',');
+        getline(ss, tweet);
+        DSString DStweet(tweet.c_str());
 
-            classifier.train(DStweet, DSsentiment);
-        }catch(const std::exception& e){
-            std::cerr << "Error: " << e.what() << "\n";
-            continue;
-        }
+        classifier.train(DStweet, DSsentiment);
     }  
 
     trainingData.close();
@@ -63,9 +67,6 @@ int main(){
 
     getline(testingData, line);    //toss the header line
     while(getline(testingData, line)){
-    //for(int i =0; i<500; i++){   //just getting sample of lines for now
-        //char sentiment[1], id[10], date[28], query[8], user[100], tweet[100];
-        //getline(testingData, line);
         stringstream ss (line);
 
         getline(ss, id, ',');
@@ -110,7 +111,7 @@ int main(){
         if (p.first == DSid && p.second == sent) {
             correct_predictions++;
         } else if (p.first == DSid && p.second != sent) {
-            answers.push_back(make_pair(p, sent));
+            answers.push_back(make_pair(p, sent));  //save the ones that predicted wrong
         }  
     }
     //del later
