@@ -96,6 +96,7 @@ public:
    std::vector<DSString> split(char delimiter);
 };
 
+//for the unordered map to work with DSString
 namespace std {
     template <>
     struct hash<DSString> {
