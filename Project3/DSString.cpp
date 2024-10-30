@@ -86,6 +86,7 @@ char& DSString::operator[](size_t position){
     return data[position];
 }
 
+//appends the string in the argument to this string
 DSString DSString::operator+(const DSString& other) const{
     DSString ret;
     ret.len = len + other.len;
@@ -148,13 +149,12 @@ DSString DSString::toLower() const{
     return ret;
 }
 
-//idk if this works
 const char* DSString::c_str() const{
     return data;
 }
 
 std::string DSString::string() const{
-    return std::string(data);   //idk how this'd works
+    return std::string(data);  
 }
 
 std::ostream& operator<<(std::ostream& os, const DSString& str){
