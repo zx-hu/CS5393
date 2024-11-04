@@ -4,7 +4,6 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
-#include <unordered_set>
 
 //constructor
 SentimentClassifier::SentimentClassifier(){
