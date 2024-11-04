@@ -4,6 +4,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include <unordered_set>
 
 //constructor
 SentimentClassifier::SentimentClassifier(){
@@ -19,14 +20,11 @@ DSString SentimentClassifier::processWord(DSString w){
     if(w.length() < 3){
         return "";
     }
-    
-    //remove loose quotes??
-    /*if(w.substring(0, 1) == "\""){
-        w = w.substring(1, w.length()-1);
+
+    //remove loose quotes
+    if(w.substring(0, 1) == "\"" && w.substring(w.length()-2, 1) == "\""){
+        w = w.substring(1, w.length()-2);
     }
-    if(w.substring(w.length()-2, 1) == "\""){
-        w = w.substring(0, w.length()-2);
-    }*/
 
     //stem for ed and ing
     if(w.substring(w.length()-2, 2) == "ed"){
@@ -50,7 +48,6 @@ void SentimentClassifier::train(DSString& text, DSString& sentiment){
             if(w.length() < 3) {
                 continue;
             }
-
             if(sentiment == "4"){
                 positiveWords[w]++;
             }else if(sentiment == "0"){
@@ -71,22 +68,15 @@ int SentimentClassifier::predict(DSString& text){
     std::vector<DSString> words = text.split(delimiter);
 
     for(auto w : words){
-        try{
-            
+        try{       
             w = processWord(w);
 
             if(w.length() < 3) {
                 continue;
             }
+            positive += positiveWords[w];  // This will add 0 if not found
+            negative += negativeWords[w]; 
 
-            auto posIt = positiveWords.find(w);
-            if(posIt != positiveWords.end()){
-                positive += posIt->second;
-            }
-            auto negIt = negativeWords.find(w);
-            if(negIt != negativeWords.end()){
-                negative += negIt->second;
-            }
         }catch(const std::exception& e){
             //std::cerr << "Error processing word: " << w << " - " << e.what() << "\n";
             continue;
