@@ -16,6 +16,7 @@ class DocumentParser{
         void parseJsonFile(std::string file_path);
         void process_folder(std::string folder_path);
         void saveAVLTrees(std::string wordMap_file, std::string personMap_file, std::string orgMap_file);
+        void loadAVLTrees(std::string wordMap_file, std::string personMap_file, std::string orgMap_file);
 };
 
 #endif
