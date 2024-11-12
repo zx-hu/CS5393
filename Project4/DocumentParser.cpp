@@ -3,6 +3,7 @@
 #include "include/rapidjson/filereadstream.h" 
 #include "include/rapidjson/istreamwrapper.h"
 #include "AVLTree.h"
+#include "porter2_stemmer-master/porter2_stemmer.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,16 +19,9 @@ DocumentParser::DocumentParser(){
     orgMap = nullptr;
 }
 
-//add more to this. download an eternal stemmer
 std::string DocumentParser::processWord(std::string word){
-    if(word.length() < 3){
-        return "";
-    }
-
-    for(char &c : word){        //make entire word lower case
-        c = std::tolower(c);
-    }
-
+    Porter2Stemmer::trim(word);
+    Porter2Stemmer::stem(word);
     return word;
 }
 
@@ -61,7 +55,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for (const auto& org : organizations.GetArray()) { 
                 if (org.HasMember("name")) {
                     std::string name = org["name"].GetString();
-                    orgMap = insert(orgMap, name, &document);
+                    orgMap = insert(orgMap, name, file_path);
                     //std::cout << name << std::endl;       
                 } 
             }
@@ -73,7 +67,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for(const auto& person : persons.GetArray()){
                 if(person.HasMember("name")){
                     std::string name = person["name"].GetString();
-                    personMap = insert(personMap, name, &document); 
+                    personMap = insert(personMap, name, file_path); 
                 }
             }
         }
@@ -85,17 +79,18 @@ void DocumentParser::parseJsonFile(std::string file_path){
         //split string by space
         std::stringstream ss(text);
         std::string word;
-        for(int i=0; i<50; i++){
+        for(int i=0; i<5; i++){
         //while(std::getline(ss, word, ' ')){
         
             std::getline(ss, word, ' ');
             word = processWord(word);
+            //don't include the word if it's too short
             if(word.length() < 3){
                 continue;
             }
-            wordMap = insert(wordMap, word, &document);
+            wordMap = insert(wordMap, word, file_path);
         }
-       //wordMap = insert(wordMap, text, &document);
+       //wordMap = insert(wordMap, text, file_path);
 
     }
       
