@@ -6,16 +6,11 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 
 // Node constructor
-Node::Node(std::string k, rapidjson::Document* docu) : key(k), height(1), left(nullptr), right(nullptr) {
-    value.push_back({docu, 1});
-}
-
-Node::~Node() {
-    for (auto& pair : value) {
-        delete pair.first;  // Delete the dynamically allocated Document
-    }
+Node::Node(std::string k, std::string file) : key(k), height(1), left(nullptr), right(nullptr) {
+    value.push_back({file, 1});
 }
 
 int getHeight(Node* node) {
@@ -52,20 +47,18 @@ Node* rotateLeft(Node* x) {
     return y;
 }
 
-Node* insert(Node* node, std::string key, rapidjson::Document* docu) {
+Node* insert(Node* node, std::string key, std::string file_path) {
     if (node == nullptr) {
-        rapidjson::Document* docuCopy = new rapidjson::Document();
-        docuCopy->CopyFrom(*docu, docuCopy->GetAllocator());  // Create a deep copy
-        return new Node(key, docuCopy);
+        return new Node(key, file_path);
     }
     if (key < node->key) {
-        node->left = insert(node->left, key, docu);
+        node->left = insert(node->left, key, file_path);
     } else if (key > node->key) {
-        node->right = insert(node->right, key, docu);
+        node->right = insert(node->right, key, file_path);
     } else {    
         bool docuFound = false;
         for(auto& pair : node->value){
-            if(pair.first == docu){         //if document is already in set
+            if(pair.first == file_path){         //if document is already in set
                 pair.second += 1;
                 docuFound = true;
                 break;
@@ -73,9 +66,7 @@ Node* insert(Node* node, std::string key, rapidjson::Document* docu) {
         }
 
         if(!docuFound){
-            rapidjson::Document* docuCopy = new rapidjson::Document();
-            docuCopy->CopyFrom(*docu, docuCopy->GetAllocator());  // Create a deep copy
-            node->value.push_back({docuCopy, 1});
+            node->value.push_back({file_path, 1});
         }
 
         return node;
@@ -115,14 +106,9 @@ void saveTree(Node* node, std::ofstream& outFile) {
     }
     saveTree(node->left, outFile);
 
-    outFile << node->key << ": " << std::endl;
+    outFile << node->key << std::endl;
     for(auto& pair : node->value){ 
-        /*rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        pair.first->Accept(writer);  // Serialize the document into the string buffer
-        outFile << "(" << buffer.GetString() << ", " << pair.second << "), ";*/
-        rapidjson::Document docu = *pair.first;
-        outFile << 
+        outFile << pair.first << "," << pair.second << ";";
         
     }
     outFile << std::endl;
@@ -132,12 +118,24 @@ void saveTree(Node* node, std::ofstream& outFile) {
 
 Node* loadTree(Node* node, std::ifstream& inFile){
     //can't write this until i decide how to save the trees
+    std::string line;
+    while(inFile.good()){
+        std::string key, path, quantityString;
+        std::getline(inFile, key); //key
+        std::getline(inFile, line, ',');    //path
+        std::getline(inFile, quantityString, ';');    //quantity
+        int quantity =stoi(quantityString);
+        for(int i=0; i<quantity; i++){
+            node = insert(node, key, path);     //need to find better way to do this
+        }
+        
+    }
     return node;
 }
 
-std::vector<std::pair<rapidjson::Document*, int> >* find(Node* root, const std::string key){
+std::vector<std::pair<std::string, int> > find(Node* root, const std::string key){
     if(root == nullptr){
-        return nullptr;     //key not found
+        return {};     //key not found
     }
 
     if(key < root->key){
@@ -145,6 +143,6 @@ std::vector<std::pair<rapidjson::Document*, int> >* find(Node* root, const std::
     }else if(key > root->key){
         return find(root->right, key);
     }else{
-        return &(root->value);
+        return root->value;
     }
 }
