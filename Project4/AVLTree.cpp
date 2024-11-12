@@ -10,7 +10,7 @@
 
 // Node constructor
 Node::Node(std::string k, std::string file) : key(k), height(1), left(nullptr), right(nullptr) {
-    value.push_back({file, 1});
+    value[file] = 1;
 }
 
 int getHeight(Node* node) {
@@ -55,20 +55,40 @@ Node* insert(Node* node, std::string key, std::string file_path) {
         node->left = insert(node->left, key, file_path);
     } else if (key > node->key) {
         node->right = insert(node->right, key, file_path);
-    } else {    
-        bool docuFound = false;
-        for(auto& pair : node->value){
-            if(pair.first == file_path){         //if document is already in set
-                pair.second += 1;
-                docuFound = true;
-                break;
-            }
-        }
+    } else {    //found
+        node->value[file_path]++;
+        return node;
+    }
 
-        if(!docuFound){
-            node->value.push_back({file_path, 1});
-        }
+    node->height = std::max(getHeight(node->left), getHeight(node->right)) + 1;
+    int balance = getBalanceFactor(node);
+    if (balance > 1 && key < node->left->key) {
+        return rotateRight(node);
+    }
+    if (balance < -1 && key > node->right->key) {
+        return rotateLeft(node);
+    }
+    if (balance > 1 && key > node->left->key) {
+        node->left = rotateLeft(node->left);
+        return rotateRight(node);
+    }
+    if (balance < -1 && key < node->right->key) {
+        node->right = rotateRight(node->right);
+        return rotateLeft(node);
+    }
+    return node;
+}
 
+Node* insert(Node* node, std::string key, std::string file_path, int quantity) {
+    if (node == nullptr) {
+        return new Node(key, file_path);
+    }
+    if (key < node->key) {
+        node->left = insert(node->left, key, file_path);
+    } else if (key > node->key) {
+        node->right = insert(node->right, key, file_path);
+    } else {    //found
+        node->value[file_path]+= quantity;
         return node;
     }
 
@@ -127,16 +147,14 @@ Node* loadTree(Node* node, std::ifstream& inFile){
         while(std::getline(ss, path, ',')){
             std::getline(ss, quantityString, ';');    //quantity
             int quantity = stoi(quantityString);
-            for(int i=0; i<quantity; i++){
-                node = insert(node, key, path);     //need to find better way to do this
-            }
+            node = insert(node, key, path, quantity);     //need to find better way to do this
         }
         
     }
     return node;
 }
 
-std::vector<std::pair<std::string, int> > find(Node* root, const std::string key){
+std::unordered_map<std::string, int> find(Node* root, const std::string key){
     if(root == nullptr){
         return {};     //key not found
     }

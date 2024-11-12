@@ -9,7 +9,7 @@
 
 struct Node {
     std::string key;
-    std::vector<std::pair<std::string, int> > value;
+    std::unordered_map<std::string, int> value;
     int height;
     Node* left;
     Node* right;
@@ -21,10 +21,11 @@ int getBalanceFactor(Node* node);
 Node* rotateRight(Node* y);
 Node* rotateLeft(Node* x);
 Node* insert(Node* node, std::string key, std::string file_path);
+Node* insert(Node* node, std::string key, std::string file_path, int quantity);
 void inOrderTraversal(Node* node);
 void saveTree(Node* node, std::ofstream& outFile);
 Node* loadTree(Node* node, std::ifstream& inFile);
-std::vector<std::pair<std::string, int> > find(Node* root, const std::string key);
+std::unordered_map<std::string, int> find(Node* root, const std::string key);
 
 
 
