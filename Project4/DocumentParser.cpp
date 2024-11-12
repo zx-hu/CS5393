@@ -19,18 +19,9 @@ DocumentParser::DocumentParser(){
     orgMap = nullptr;
 }
 
-//add more to this. download an eternal stemmer
 std::string DocumentParser::processWord(std::string word){
-
-    //std::cout << word;
-
     Porter2Stemmer::trim(word);
     Porter2Stemmer::stem(word);
-    //std::cout << ", " << word << std::endl;
-
-    if(word.length() < 3){
-        return "";
-    }
     return word;
 }
 
@@ -93,6 +84,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
         
             std::getline(ss, word, ' ');
             word = processWord(word);
+            //don't include the word if it's too short
             if(word.length() < 3){
                 continue;
             }
@@ -142,29 +134,3 @@ void DocumentParser::saveAVLTrees(std::string wordMap_file, std::string personMa
     }
     
 }
-
-void DocumentParser::loadAVLTrees(std::string wordMap_file, std::string personMap_file, std::string orgMap_file){
-    std::ifstream wordMapFile(wordMap_file);
-    if(wordMapFile.is_open()){
-        wordMap = loadTree(wordMap, wordMapFile);
-        wordMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-
-    std::ifstream personMapFile(personMap_file);
-    if(personMapFile.is_open()){
-        personMap = loadTree(personMap, personMapFile);
-        personMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-
-    std::ifstream orgMapFile(orgMap_file);
-    if(orgMapFile.is_open()){
-        orgMap = loadTree(orgMap, orgMapFile);
-        orgMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-} 
