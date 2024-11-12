@@ -122,11 +122,14 @@ Node* loadTree(Node* node, std::ifstream& inFile){
     while(inFile.good()){
         std::string key, path, quantityString;
         std::getline(inFile, key); //key
-        std::getline(inFile, line, ',');    //path
-        std::getline(inFile, quantityString, ';');    //quantity
-        int quantity =stoi(quantityString);
-        for(int i=0; i<quantity; i++){
-            node = insert(node, key, path);     //need to find better way to do this
+        std::getline(inFile, line);    //path;quantity;
+        std::stringstream ss(line);
+        while(std::getline(ss, path, ',')){
+            std::getline(ss, quantityString, ';');    //quantity
+            int quantity = stoi(quantityString);
+            for(int i=0; i<quantity; i++){
+                node = insert(node, key, path);     //need to find better way to do this
+            }
         }
         
     }
