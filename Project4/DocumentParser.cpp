@@ -3,6 +3,7 @@
 #include "include/rapidjson/filereadstream.h" 
 #include "include/rapidjson/istreamwrapper.h"
 #include "AVLTree.h"
+#include "porter2_stemmer-master/porter2_stemmer.h"
 
 #include <iostream>
 #include <fstream>
@@ -20,14 +21,16 @@ DocumentParser::DocumentParser(){
 
 //add more to this. download an eternal stemmer
 std::string DocumentParser::processWord(std::string word){
+
+    //std::cout << word;
+
+    Porter2Stemmer::trim(word);
+    Porter2Stemmer::stem(word);
+    //std::cout << ", " << word << std::endl;
+
     if(word.length() < 3){
         return "";
     }
-
-    for(char &c : word){        //make entire word lower case
-        c = std::tolower(c);
-    }
-
     return word;
 }
 
@@ -61,7 +64,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for (const auto& org : organizations.GetArray()) { 
                 if (org.HasMember("name")) {
                     std::string name = org["name"].GetString();
-                    orgMap = insert(orgMap, name, &document);
+                    orgMap = insert(orgMap, name, file_path);
                     //std::cout << name << std::endl;       
                 } 
             }
@@ -73,7 +76,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for(const auto& person : persons.GetArray()){
                 if(person.HasMember("name")){
                     std::string name = person["name"].GetString();
-                    personMap = insert(personMap, name, &document); 
+                    personMap = insert(personMap, name, file_path); 
                 }
             }
         }
@@ -85,7 +88,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
         //split string by space
         std::stringstream ss(text);
         std::string word;
-        for(int i=0; i<50; i++){
+        for(int i=0; i<5; i++){
         //while(std::getline(ss, word, ' ')){
         
             std::getline(ss, word, ' ');
@@ -93,9 +96,9 @@ void DocumentParser::parseJsonFile(std::string file_path){
             if(word.length() < 3){
                 continue;
             }
-            wordMap = insert(wordMap, word, &document);
+            wordMap = insert(wordMap, word, file_path);
         }
-       //wordMap = insert(wordMap, text, &document);
+       //wordMap = insert(wordMap, text, file_path);
 
     }
       
@@ -139,3 +142,29 @@ void DocumentParser::saveAVLTrees(std::string wordMap_file, std::string personMa
     }
     
 }
+
+void DocumentParser::loadAVLTrees(std::string wordMap_file, std::string personMap_file, std::string orgMap_file){
+    std::ifstream wordMapFile(wordMap_file);
+    if(wordMapFile.is_open()){
+        wordMap = loadTree(wordMap, wordMapFile);
+        wordMapFile.close();
+    }else{
+        std::cerr << "Failed to open file";
+    }
+
+    std::ifstream personMapFile(personMap_file);
+    if(personMapFile.is_open()){
+        personMap = loadTree(personMap, personMapFile);
+        personMapFile.close();
+    }else{
+        std::cerr << "Failed to open file";
+    }
+
+    std::ifstream orgMapFile(orgMap_file);
+    if(orgMapFile.is_open()){
+        orgMap = loadTree(orgMap, orgMapFile);
+        orgMapFile.close();
+    }else{
+        std::cerr << "Failed to open file";
+    }
+} 
