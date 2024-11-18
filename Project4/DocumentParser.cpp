@@ -19,7 +19,7 @@ DocumentParser::DocumentParser(){
     orgMap = nullptr;
 }
 
-std::string DocumentParser::processWord(std::string word){
+std::string processWord(std::string word){
     Porter2Stemmer::trim(word);
     Porter2Stemmer::stem(word);
     return word;
@@ -55,8 +55,12 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for (const auto& org : organizations.GetArray()) { 
                 if (org.HasMember("name")) {
                     std::string name = org["name"].GetString();
-                    orgMap = insert(orgMap, name, file_path);
-                    //std::cout << name << std::endl;       
+                    //split name by space, insert each individual name
+                    std::stringstream ss(name);
+                    std::string word;
+                    while(std::getline(ss, word, ' ')){
+                    orgMap = insert(orgMap, name, file_path); 
+                    }
                 } 
             }
         }
@@ -67,7 +71,12 @@ void DocumentParser::parseJsonFile(std::string file_path){
             for(const auto& person : persons.GetArray()){
                 if(person.HasMember("name")){
                     std::string name = person["name"].GetString();
+                    //split name by space, insert each individual name
+                    std::stringstream ss(name);
+                    std::string word;
+                    while(std::getline(ss, word, ' ')){
                     personMap = insert(personMap, name, file_path); 
+                    }
                 }
             }
         }
@@ -79,10 +88,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
         //split string by space
         std::stringstream ss(text);
         std::string word;
-        for(int i=0; i<5; i++){
-        //while(std::getline(ss, word, ' ')){
-        
-            std::getline(ss, word, ' ');
+        while(std::getline(ss, word, ' ')){
             word = processWord(word);
             //don't include the word if it's too short
             if(word.length() < 3){
@@ -90,7 +96,6 @@ void DocumentParser::parseJsonFile(std::string file_path){
             }
             wordMap = insert(wordMap, word, file_path);
         }
-       //wordMap = insert(wordMap, text, file_path);
 
     }
       
