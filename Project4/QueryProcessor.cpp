@@ -1,4 +1,5 @@
 #include "QueryProcessor.h"
+#include "porter2_stemmer-master/porter2_stemmer.h"
 #include <iostream>
 #include <sstream>
 
@@ -32,6 +33,15 @@ void mergeAndSumMaps(std::unordered_map<std::string, int>& map1, std::unordered_
         auto it = map1.find(key);
         if(it != map1.end()){
             map1[key] += pair.second;
+        }
+    }
+
+    for(const auto& pair : map1){
+        const std::string& key = pair.first;
+
+        auto it = map2.find(key);
+        if(it == map2.end()){
+            map1.erase(key);
         }
     }
 }
@@ -89,9 +99,18 @@ std::vector<std::pair<std::string,int> > QueryProcessor::search(std::string inpu
 
         }else{
             //PROCESSWORD!!!
+            Porter2Stemmer::trim(word);
+            Porter2Stemmer::stem(word);
+            if(word.length()<3){
+                continue;
+            }
             single_result = find(wordMap, word);
         }
-        mergeAndSumMaps(results, single_result);
+        if(results.empty()){    //for first word
+            mergeMaps(results, single_result);
+        }else{                  //for every other iteration
+            mergeAndSumMaps(results, single_result);
+        }
     }
     mergeAndRemoveMaps(results, removeResults);
     //put into vector for sorting
