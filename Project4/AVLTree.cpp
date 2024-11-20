@@ -1,7 +1,4 @@
 #include "AVLTree.h"
-#include "include/rapidjson/document.h"
-#include "include/rapidjson/stringbuffer.h"
-#include "include/rapidjson/writer.h"
 
 #include <iostream>
 #include <algorithm>
@@ -47,46 +44,14 @@ Node* rotateLeft(Node* x) {
     return y;
 }
 
-Node* insert(Node* node, std::string key, std::string file_path) {
-    if (node == nullptr) {
-        return new Node(key, file_path);
-    }
-    if (key < node->key) {
-        node->left = insert(node->left, key, file_path);
-    } else if (key > node->key) {
-        node->right = insert(node->right, key, file_path);
-    } else {    //found
-        node->value[file_path]++;
-        return node;
-    }
-
-    node->height = std::max(getHeight(node->left), getHeight(node->right)) + 1;
-    int balance = getBalanceFactor(node);
-    if (balance > 1 && key < node->left->key) {
-        return rotateRight(node);
-    }
-    if (balance < -1 && key > node->right->key) {
-        return rotateLeft(node);
-    }
-    if (balance > 1 && key > node->left->key) {
-        node->left = rotateLeft(node->left);
-        return rotateRight(node);
-    }
-    if (balance < -1 && key < node->right->key) {
-        node->right = rotateRight(node->right);
-        return rotateLeft(node);
-    }
-    return node;
-}
-
 Node* insert(Node* node, std::string key, std::string file_path, int quantity) {
     if (node == nullptr) {
         return new Node(key, file_path);
     }
     if (key < node->key) {
-        node->left = insert(node->left, key, file_path);
+        node->left = insert(node->left, key, file_path, quantity);
     } else if (key > node->key) {
-        node->right = insert(node->right, key, file_path);
+        node->right = insert(node->right, key, file_path, quantity);
     } else {    //found
         node->value[file_path]+= quantity;
         return node;
@@ -111,43 +76,32 @@ Node* insert(Node* node, std::string key, std::string file_path, int quantity) {
     return node;
 }
 
-void inOrderTraversal(Node* node) {
-    if (node == nullptr) {
-        return;
-    }
-    inOrderTraversal(node->left);
-    std::cout << node->key << " ";
-    inOrderTraversal(node->right);
-}
-
 void saveTree(Node* node, std::ofstream& outFile) {
-    if (node == nullptr) {
+    if (node == nullptr) {                  //saves in preorder traversal order
         return;
     }
-    saveTree(node->left, outFile);
-
-    outFile << node->key << std::endl;
-    for(auto& pair : node->value){ 
+                                                    //save format:
+    outFile << node->key << std::endl;              //node
+    for(auto& pair : node->value){                  //path,quantity;path,quantity 
         outFile << pair.first << "," << pair.second << ";";
         
     }
     outFile << std::endl;
-
+    saveTree(node->left, outFile);
     saveTree(node->right, outFile);
 }
 
-Node* loadTree(Node* node, std::ifstream& inFile){
-    //can't write this until i decide how to save the trees
+Node* loadTree(Node* node, std::ifstream inFile){
     std::string line;
     while(inFile.good()){
         std::string key, path, quantityString;
         std::getline(inFile, key); //key
-        std::getline(inFile, line);    //path;quantity;
+        std::getline(inFile, line);    //path,quantity;
         std::stringstream ss(line);
         while(std::getline(ss, path, ',')){
             std::getline(ss, quantityString, ';');    //quantity
             int quantity = stoi(quantityString);
-            node = insert(node, key, path, quantity);     //need to find better way to do this
+            node = insert(node, key, path, quantity);
         }
         
     }
