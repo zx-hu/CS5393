@@ -14,9 +14,6 @@
 
 //constructor
 DocumentParser::DocumentParser(){
-    wordMap = nullptr;
-    personMap = nullptr;
-    orgMap = nullptr;
 }
 
 std::string processWord(std::string word){
@@ -25,7 +22,7 @@ std::string processWord(std::string word){
     return word;
 }
 
-void DocumentParser::parseJsonFile(std::string file_path){
+void DocumentParser::parseJsonFile(std::string file_path, Node*& wordMap, Node*& personMap, Node*& orgMap){
     std::ifstream file(file_path);
     if(!file.is_open()){
         std::cerr << "Error opening file";
@@ -59,7 +56,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
                     std::stringstream ss(name);
                     std::string word;
                     while(std::getline(ss, word, ' ')){
-                    orgMap = insert(orgMap, name, file_path); 
+                        orgMap = insert(orgMap, word, file_path); 
                     }
                 } 
             }
@@ -75,7 +72,7 @@ void DocumentParser::parseJsonFile(std::string file_path){
                     std::stringstream ss(name);
                     std::string word;
                     while(std::getline(ss, word, ' ')){
-                    personMap = insert(personMap, name, file_path); 
+                        personMap = insert(personMap, word, file_path); 
                     }
                 }
             }
@@ -101,41 +98,10 @@ void DocumentParser::parseJsonFile(std::string file_path){
       
 }
 
-void DocumentParser::process_folder(std::string folder_path){
+void DocumentParser::process_folder(std::string folder_path, Node*& wordMap, Node*& personMap, Node*& orgMap){
     for(const auto& file : std::filesystem::directory_iterator(folder_path)){
         if(file.path().extension() == ".json"){
-            parseJsonFile(file.path().string());
+            parseJsonFile(file.path().string(), wordMap, personMap, orgMap);
         }
     }
-}
-
-void DocumentParser::saveAVLTrees(std::string wordMap_file, std::string personMap_file, std::string orgMap_file){
-    //save text
-    std::ofstream wordMapFile(wordMap_file);
-    if(wordMapFile.is_open()){
-        saveTree(wordMap, wordMapFile); //save to file
-        wordMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-
-    //save persons
-    std::ofstream personMapFile(personMap_file);
-    if(personMapFile.is_open()){
-        saveTree(personMap, personMapFile); //save to file
-        personMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-
-    //save orgs
-    std::ofstream orgMapFile(orgMap_file);
-
-    if(orgMapFile.is_open()){
-        saveTree(orgMap, orgMapFile); //save to file
-        orgMapFile.close();
-    }else{
-        std::cerr << "Failed to open file";
-    }
-    
 }
