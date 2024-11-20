@@ -91,7 +91,7 @@ void saveTree(Node* node, std::ofstream& outFile) {
     saveTree(node->right, outFile);
 }
 
-Node* loadTree(Node* node, std::ifstream inFile){
+Node* loadTree(Node* node, std::ifstream& inFile){
     std::string line;
     while(inFile.good()){
         std::string key, path, quantityString;
