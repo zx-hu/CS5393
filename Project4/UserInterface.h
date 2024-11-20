@@ -11,6 +11,7 @@ class UserInterface{
         Node* wordMap;
         Node* personMap;
         Node* orgMap;
+        bool searching;
     public:
         UserInterface();
         DocumentParser parser;
