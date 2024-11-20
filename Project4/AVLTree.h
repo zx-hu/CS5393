@@ -1,8 +1,6 @@
 #ifndef AVLTREE_H
 #define AVLTREE_H
 
-#include "include/rapidjson/document.h"
-
 #include <iostream>
 #include <algorithm>
 #include <fstream>
@@ -20,11 +18,9 @@ int getHeight(Node* node);
 int getBalanceFactor(Node* node);
 Node* rotateRight(Node* y);
 Node* rotateLeft(Node* x);
-Node* insert(Node* node, std::string key, std::string file_path);
-Node* insert(Node* node, std::string key, std::string file_path, int quantity);
-void inOrderTraversal(Node* node);
+Node* insert(Node* node, std::string key, std::string file_path, int quantity=1);
 void saveTree(Node* node, std::ofstream& outFile);
-Node* loadTree(Node* node, std::ifstream& inFile);
+Node* loadTree(Node* node, std::ifstream inFile);
 std::unordered_map<std::string, int> find(Node* root, const std::string key);
 
 
