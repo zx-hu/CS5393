@@ -1,16 +1,18 @@
 #include "UserInterface.h"
 #include "include/rapidjson/istreamwrapper.h"
 #include "include/rapidjson/document.h"
+#include "AVLTree.h"
 #include <iostream>
 
 UserInterface::UserInterface(){
     wordMap = nullptr;
     personMap = nullptr;
     orgMap = nullptr;
+    searching = true;
 }
 
 void UserInterface::interface(){
-    while(true){
+    while(searching){
         std::cout << "Options:" << std::endl;
         std::cout << "1. Read from file path" << std::endl;
         std::cout << "2. Read from file" << std::endl;
@@ -100,6 +102,7 @@ void UserInterface::interface(){
                 }
                 break;
             case 5: //quit
+                searching = false;
                 break;
             default:
                 //inputted a number but not one of the options
@@ -207,7 +210,7 @@ void UserInterface::displayArticle(std::string file_path){
     //date published
     if(document.HasMember("published")){         
         std::string date = document["published"].GetString();
-        std::cout << "Date Published: " << date.substr(0,9) << std::endl;
+        std::cout << "Date Published: " << date.substr(0,10) << std::endl;
     }
 
     std::cout << file_path << std::endl;
